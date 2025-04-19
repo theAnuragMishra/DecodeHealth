@@ -2,4 +2,7 @@
   let { children } = $props();
   import "../app.css";
 </script>
-{@render children()}
+
+<main class="flex min-h-screen flex-col items-center justify-center">
+  {@render children()}
+</main>

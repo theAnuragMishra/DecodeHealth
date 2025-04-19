@@ -59,5 +59,4 @@ func setup() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 }
