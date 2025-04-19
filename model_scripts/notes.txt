@@ -1,0 +1,8 @@
+1) Generate keys (if first time):
+    python encryptor.py -g
+
+2) Encrypt a sequence file:
+    python encryptor.py -i sample.fastq -o encrypted_sample.c4gh -p public.key
+
+3) To decrypt (for authorized users with private key):
+    crypt4gh decrypt --sk private.key < encrypted_sample.c4gh > decrypted.fastq    
