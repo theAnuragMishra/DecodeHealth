@@ -11,7 +11,7 @@ SAMPLE_REPORTS = {
     Patient presents with elevated cardiac enzymes and ST-segment elevation on ECG.
     History of hypertension and smoking. Echocardiogram shows reduced ejection fraction (35%).
     Recommended urgent cardiac catheterization.
-    """,
+    """
     
 }
 
