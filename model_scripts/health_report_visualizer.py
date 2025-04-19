@@ -24,7 +24,7 @@ except:
 class HealthReportAnalyzer:
     """Uses an open-source LLM to analyze health reports and extract vulnerabilities"""
 
-     def __init__(self, llm_api_choice="ollama"):
+    def __init__(self, llm_api_choice="ollama"):
         """
         Initialize with choice of free/open-source LLM API
         Options:
@@ -36,11 +36,11 @@ class HealthReportAnalyzer:
         self.llm_api_choice = llm_api_choice
         self.setup_llm_api()
 
-     def setup_llm_api(self):
+    def setup_llm_api(self):
       """Setup the chosen LLM API"""
       if self.llm_api_choice == "ollama":
         # Default Ollama endpoint, typically running locally
-        self.api_endpoint = "http://localhost:11434/api/generate"
+        self.api_endpoint = "http://localhost:11435/api/generate"
         self.model = "llama3" # Can be changed to any model available in Ollama
         print(f"Using Ollama with model '{self.model}' at {self.api_endpoint}")
         # Check if Ollama is installed and running
@@ -80,7 +80,7 @@ class HealthReportAnalyzer:
       else:
         raise ValueError(f"Unsupported LLM API choice: {self.llm_api_choice}")
 
-     def analyze_report(self, report_text):
+    def analyze_report(self, report_text):
         """
         Analyze the health report using the LLM to identify body parts and risk levels
         Returns a dictionary of {body_part: risk_level}
@@ -109,7 +109,7 @@ class HealthReportAnalyzer:
         response = self._call_llm_api(prompt)
         return self._parse_llm_response(response)
 
-     def generate_annotated_report(self, report_text, vulnerabilities):
+    def generate_annotated_report(self, report_text, vulnerabilities):
         """
         Generate an annotated version of the report with highlighted vulnerabilities
         """
@@ -130,7 +130,7 @@ class HealthReportAnalyzer:
         annotated_report = self._call_llm_api(prompt)
         return annotated_report
 
-     def _call_llm_api(self, prompt):
+    def _call_llm_api(self, prompt):
       """Make API call to the selected LLM service"""
       try:
         if self.llm_api_choice == "ollama":
@@ -195,7 +195,7 @@ class HealthReportAnalyzer:
         # Fallback to basic text analysis if LLM API fails
         return self._fallback_analysis(prompt)
 
-     def _parse_llm_response(self, response):
+    def _parse_llm_response(self, response):
         """Parse the LLM response to extract the JSON dictionary"""
         try:
             # Try to extract JSON from the response
@@ -226,7 +226,7 @@ class HealthReportAnalyzer:
 
             return body_parts
 
-     def _fallback_analysis(self, prompt):
+    def _fallback_analysis(self, prompt):
         """
         Simple fallback analysis if LLM API is unavailable
         Uses basic regex to extract body parts and risk levels
@@ -391,7 +391,7 @@ class HealthVisualizer:
                  (0.75, 'yellow'), (1, 'red')]
       self.psychedelic_cmap = LinearSegmentedColormap.from_list('psychedelic', colors)
 
-     def get_base_body_image(self, gender="neutral"):
+    def get_base_body_image(self, gender="neutral"):
       """Get a base body image from local file or create a placeholder"""
       local_path = f"images/{gender}_body.png"
 
@@ -409,7 +409,7 @@ class HealthVisualizer:
         print(f"Local image {local_path} not found")
         return self._create_placeholder_body()
 
-     def _create_placeholder_body(self, width=600, height=1000):
+    def _create_placeholder_body(self, width=600, height=1000):
         """Create a basic placeholder body outline image"""
         image = Image.new('RGBA', (width, height), (255, 255, 255, 0))
         draw = ImageDraw.Draw(image)
@@ -437,7 +437,7 @@ class HealthVisualizer:
 
         return image
 
-     def generate_visualization(self, body_parts_risks, base_image=None, gender="neutral", crazy_mode=True):
+    def generate_visualization(self, body_parts_risks, base_image=None, gender="neutral", crazy_mode=True):
         """
         Generate a visualization highlighting the body parts with associated risks
 
@@ -477,7 +477,7 @@ class HealthVisualizer:
 
         return result_image
 
-     def _apply_psychedelic_background(self, image):
+    def _apply_psychedelic_background(self, image):
         """Apply a crazy psychedelic effect to the image background"""
         # Create a new image with the same size
         width, height = image.size
@@ -512,7 +512,7 @@ class HealthVisualizer:
         # Blend with original image
         return Image.alpha_composite(psychedelic_bg, image)
 
-     def _highlight_body_part(self, draw, part, risk_level, width, height):
+    def _highlight_body_part(self, draw, part, risk_level, width, height):
         """Highlight a body part with the appropriate risk color"""
         color_hex = self.risk_levels.get(risk_level, '#FFFF00')  # Default to yellow if risk not found
 
@@ -571,7 +571,7 @@ class HealthVisualizer:
                             (x_center + radius_mod, y_center + radius_mod)],
                            fill=glow_color)
 
-     def _highlight_full_body(self, draw, color, width, height):
+    def _highlight_full_body(self, draw, color, width, height):
         """Highlight the entire body with a glowing effect"""
         # Create a semi-transparent overlay for the whole body
         r, g, b, a = color
@@ -622,7 +622,7 @@ class HealthVisualizer:
                 glow_color = (r, g, b, glow_alpha)
                 draw.line(body_shape + [body_shape[0]], fill=glow_color, width=10+(i*5))
 
-     def _highlight_skeleton(self, draw, color, width, height):
+    def _highlight_skeleton(self, draw, color, width, height):
         """Highlight the skeleton with a glowing effect"""
         r, g, b, a = color
         bone_color = (r, g, b, 120)
@@ -679,7 +679,7 @@ class HealthVisualizer:
 
                 # More glow effects for other bones...
 
-     def _highlight_vessels(self, draw, color, width, height):
+    def _highlight_vessels(self, draw, color, width, height):
         """Highlight blood vessels with a network of lines"""
         r, g, b, a = color
         vessel_color = (r, g, b, 100)
@@ -743,13 +743,13 @@ class HealthVisualizer:
                 draw.line([(heart_x, heart_y), (heart_x, height*0.5)],
                         fill=glow_color, width=int(width*0.012) + (i*5))
 
-     def _highlight_special_section(self, draw, color, section_name, width, height):
+    def _highlight_special_section(self, draw, color, section_name, width, height):
         """Highlight special sections like respiratory system, etc."""
         if section_name == "vessels":
             self._highlight_vessels(draw, color, width, height)
         # Add more special sections as needed
 
-     def _add_labels(self, image, body_parts_risks):
+    def _add_labels(self, image, body_parts_risks):
       """Add text labels for the highlighted body parts with larger font and better positioning"""
       draw = ImageDraw.Draw(image)
       width, height = image.size
@@ -843,7 +843,7 @@ class HealthVisualizer:
 
       return image
 
-     def _highlight_body_part(self, draw, part, risk_level, width, height):
+    def _highlight_body_part(self, draw, part, risk_level, width, height):
       """Highlight a body part with the appropriate risk color"""
       color_hex = self.risk_levels.get(risk_level, '#FFFF00')  # Default to yellow if risk not found
 
@@ -904,7 +904,7 @@ class HealthVisualizer:
                        fill=glow_color)
 
 
-     def _add_title_and_legend(self, image, body_parts_risks):
+    def _add_title_and_legend(self, image, body_parts_risks):
       """Add a title and risk level legend to the image with improved formatting"""
       # Create a new image with extra space for title and legend
       width, height = image.size
