@@ -14,7 +14,7 @@ GenoSense is a robust, AI-driven genomics platform designed to streamline the fl
 
   
 ## Presentation Link:
-  <a href="https://docs.google.com/document/d/1q_LBPiuw8-IA4X1Dm2E96WfQDCPOj8Ngu7Z2Sg2lDno/edit?tab=t.0"> PPT link here </a>
+  <a href="https://www.canva.com/design/DAGlH2Ah5gU/YPzuAiYTL-rNtACJoFef6w/edit?utm_content=DAGlH2Ah5gU&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton"> PPT link here </a>
 
   
 ## 🚀 Project Overview
