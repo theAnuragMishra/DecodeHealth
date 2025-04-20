@@ -94,10 +94,10 @@ D --> F[Map Common Vulnerabilities on Human Body and also marking common disease
 
 Team Name: CodeNhiAta
 
-- [Abhishek Patel](https://github.com/meisabhishekpatel)
-- [Alok Kumar Singh](https://github.com/harmonicfunc)
-- [Shreyansh Sinha](https://github.com/aryan1oo)
-- [Utkarsh Sharma](https://github.com/TechTonicShift)
+- [Vaishnavi Tiwari](https://github.com/Vaishnavi1047)
+- [Shourya Mishra](https://github.com/ShouryaMishra2006)
+- [Anurag Mishra](https://github.com/theAnuragMishra)
+- [Naman Agarwal](https://github.com/NamanAgarwal0905)
 
 
 ### Made at:
