@@ -99,6 +99,3 @@ Team Name: CodeNhiAta
 - [Anurag Mishra](https://github.com/theAnuragMishra)
 - [Naman Agarwal](https://github.com/NamanAgarwal0905)
 
-
-### Made at:
-<a href="https://hack36.in"> <img src="https://postimage.me/images/2025/04/19/built-at-hack36.png" height=24px> </a>
