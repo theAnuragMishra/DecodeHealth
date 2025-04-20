@@ -206,3 +206,13 @@ func (c *Controller) GetRequestsForLab(w http.ResponseWriter, r *http.Request) {
 	RespondWithJSON(w, http.StatusOK, requests)
 
 }
+
+func (c *Controller) GetLabs(w http.ResponseWriter, r *http.Request) {
+	labs, err := c.queries.GetLabs(r.Context())
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, "server error")
+		return
+	}
+	RespondWithJSON(w, http.StatusOK, labs)
+
+}

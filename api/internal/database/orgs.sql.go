@@ -24,6 +24,36 @@ func (q *Queries) CreateOrg(ctx context.Context, arg CreateOrgParams) error {
 	return err
 }
 
+const getLabs = `-- name: GetLabs :many
+SELECT id, name, created_at, kind, password_hash FROM orgs WHERE role = 'lab'
+`
+
+func (q *Queries) GetLabs(ctx context.Context) ([]Org, error) {
+	rows, err := q.db.Query(ctx, getLabs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Org
+	for rows.Next() {
+		var i Org
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.CreatedAt,
+			&i.Kind,
+			&i.PasswordHash,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getOrg = `-- name: GetOrg :one
 SELECT id, name, created_at, kind, password_hash FROM orgs WHERE id = $1
 `
