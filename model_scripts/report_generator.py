@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from huggingface_hub import login
@@ -5,7 +6,7 @@ from huggingface_hub import login
 def genomic_analysis_pipeline(
     input_fasta: str,
     reference_fasta: str,
-    output_report: str = "genetic_report.txt",
+    output_report: str = "test_output/genetic_report.txt",
     hf_token: str = None,
     max_variants: int = 100
 ):
@@ -91,8 +92,8 @@ def genomic_analysis_pipeline(
 
 # Usage
 genomic_analysis_pipeline(
-    input_fasta="sample.fasta",
-    reference_fasta="reference.fa",
-    hf_token="your_token_here",
+    input_fasta="testIn/sample.fasta", 
+    reference_fasta="testIn/Homo_sapiens.GRCh38.dna.alt.fa",  
+    hf_token=os.environ.get("HF_TOKEN"),  
     max_variants=50
 )
