@@ -1,198 +1,98 @@
-"""
-Variant Calling Pipeline
-
-This script takes a FASTA file with DNA sequencing data, aligns it to the GRCh38 reference genome,
-and outputs a VCF file with identified variants.
-
-Requirements:
-- BWA (Burrows-Wheeler Aligner)
-- SAMtools
-- BCFtools
-- Reference genome: Homo_sapiens.GRCh38.dna.alt.fa
-"""
-
-import os
-import subprocess
-import argparse
-import logging
 from pathlib import Path
-import shutil
-import tempfile
+from transformers import AutoTokenizer, AutoModelForCausalLM
+from huggingface_hub import login
 
-def setup_logging():
-    """Set up logging configuration"""
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(levelname)s - %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
-    )
-    return logging.getLogger(__name__)
-
-def check_dependencies():
-    """Check if all required tools are installed"""
-    required_tools = ['bwa', 'samtools', 'bcftools']
-    missing_tools = []
-    
-    for tool in required_tools:
-        try:
-            subprocess.run([tool, '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
-        except FileNotFoundError:
-            missing_tools.append(tool)
-    
-    if missing_tools:
-        raise EnvironmentError(f"Missing required tools: {', '.join(missing_tools)}")
-
-def extract_bwa(bwa_tar_path, output_dir):
-    """Extract BWA from tar file if needed"""
-    logger = logging.getLogger(__name__)
-    
-    # Check if bwa is already in PATH
-    try:
-        subprocess.run(['bwa', '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
-        logger.info("BWA already installed, skipping extraction")
-        return
-    except FileNotFoundError:
-        logger.info("BWA not found in PATH, extracting from tar file")
-        
-    # Extract BWA
-    os.makedirs(output_dir, exist_ok=True)
-    subprocess.run(['tar', '-xf', bwa_tar_path, '-C', output_dir], check=True)
-    
-    # Add extracted BWA to PATH
-    bwa_bin_dir = None
-    for root, dirs, files in os.walk(output_dir):
-        if 'bwa' in files:
-            bwa_bin_dir = root
-            break
-    
-    if bwa_bin_dir:
-        os.environ['PATH'] = f"{bwa_bin_dir}:{os.environ['PATH']}"
-        logger.info(f"Added BWA to PATH: {bwa_bin_dir}")
-    else:
-        raise FileNotFoundError("BWA executable not found in extracted tar file")
-
-def index_reference(reference_path):
-    """Index the reference genome if index doesn't exist"""
-    logger = logging.getLogger(__name__)
-    
-    # Check if BWA index exists
-    if not any(Path(f"{reference_path}.{ext}").exists() for ext in ['amb', 'ann', 'bwt', 'pac', 'sa']):
-        logger.info("Indexing reference genome with BWA...")
-        subprocess.run(['bwa', 'index', reference_path], check=True)
-    else:
-        logger.info("BWA index already exists")
-    
-    # Check if SAMtools index exists
-    if not Path(f"{reference_path}.fai").exists():
-        logger.info("Indexing reference genome with SAMtools...")
-        subprocess.run(['samtools', 'faidx', reference_path], check=True)
-    else:
-        logger.info("SAMtools index already exists")
-
-def align_and_call_variants(input_fasta, reference_path, output_vcf, threads=1):
-    """Align FASTA to reference and call variants"""
-    logger = logging.getLogger(__name__)
-    
-    # Create a temporary directory for intermediate files
-    with tempfile.TemporaryDirectory() as temp_dir:
-        # Define intermediate file paths
-        sample_name = Path(input_fasta).stem
-        sam_file = f"{temp_dir}/{sample_name}.sam"
-        bam_file = f"{temp_dir}/{sample_name}.bam"
-        sorted_bam = f"{temp_dir}/{sample_name}.sorted.bam"
-        
-        # Align with BWA MEM
-        logger.info("Aligning reads to reference...")
-        with open(sam_file, 'w') as sam_out:
-            subprocess.run([
-                'bwa', 'mem',
-                '-t', str(threads),
-                reference_path,
-                input_fasta
-            ], stdout=sam_out, check=True)
-        
-        # Convert SAM to BAM
-        logger.info("Converting SAM to BAM...")
-        subprocess.run([
-            'samtools', 'view',
-            '-bS', sam_file,
-            '-o', bam_file
-        ], check=True)
-        
-        # Sort BAM file
-        logger.info("Sorting BAM file...")
-        subprocess.run([
-            'samtools', 'sort',
-            '-@', str(threads),
-            '-o', sorted_bam,
-            bam_file
-        ], check=True)
-        
-        # Index BAM file
-        logger.info("Indexing BAM file...")
-        subprocess.run([
-            'samtools', 'index',
-            sorted_bam
-        ], check=True)
-        
-        # Call variants with mpileup and bcftools
-        logger.info("Calling variants...")
-        subprocess.run([
-            'bcftools', 'mpileup',
-            '-f', reference_path,
-            sorted_bam,
-            '|',
-            'bcftools', 'call',
-            '-mv',
-            '-o', output_vcf
-        ], shell=True, check=True)
-        
-        # Normalize VCF
-        logger.info("Normalizing variants...")
-        temp_vcf = f"{temp_dir}/temp.vcf"
-        shutil.move(output_vcf, temp_vcf)
-        subprocess.run([
-            'bcftools', 'norm',
-            '-f', reference_path,
-            '-o', output_vcf,
-            temp_vcf
-        ], check=True)
-        
-    logger.info(f"Variant calling complete. Results written to {output_vcf}")
-    return output_vcf
-
-def process_dna_sequencing(input_fasta, reference_path, output_vcf, bwa_tar_path=None, threads=1):
+def genomic_analysis_pipeline(
+    input_fasta: str,
+    reference_fasta: str,
+    output_report: str = "genetic_report.txt",
+    hf_token: str = None,
+    max_variants: int = 100
+):
     """
-    Main function to process DNA sequencing data and call variants
+    Complete genomic analysis pipeline from FASTA to AI report
     
     Args:
-        input_fasta: Path to input FASTA file with DNA sequencing data
-        reference_path: Path to reference genome (GRCh38)
-        output_vcf: Path to output VCF file
-        bwa_tar_path: Path to BWA tar file (optional)
-        threads: Number of threads to use
-        
-    Returns:
-        Path to output VCF file
+        input_fasta: Path to input sample FASTA
+        reference_fasta: Path to reference genome FASTA
+        output_report: Output report path
+        hf_token: HuggingFace authentication token
+        max_variants: Maximum variants to analyze
     """
-    logger = setup_logging()
     
-    # Check if input files exist
-    if not os.path.exists(input_fasta):
-        raise FileNotFoundError(f"Input FASTA file not found: {input_fasta}")
+    # Validate inputs
+    if not Path(input_fasta).exists():
+        raise FileNotFoundError(f"Input FASTA not found: {input_fasta}")
+    if not Path(reference_fasta).exists():
+        raise FileNotFoundError(f"Reference FASTA not found: {reference_fasta}")
+
+    # 1. Read sequences
+    def read_fasta(filepath):
+        with open(filepath) as f:
+            return "".join(line.strip() for line in f if not line.startswith(">"))
     
-    if not os.path.exists(reference_path):
-        raise FileNotFoundError(f"Reference genome not found: {reference_path}")
+    ref_seq = read_fasta(reference_fasta)
+    sample_seq = read_fasta(input_fasta)
+
+    # 2. Generate variants
+    variants = []
+    min_length = min(len(ref_seq), len(sample_seq))
+    for pos in range(min_length):
+        if ref_seq[pos] != sample_seq[pos]:
+            variants.append({
+                "CHROM": "chr1",
+                "POS": pos + 1,
+                "REF": ref_seq[pos],
+                "ALT": sample_seq[pos],
+                "SAMPLE": Path(input_fasta).stem
+            })
+            if len(variants) >= max_variants:
+                break
+
+    # 3. Create VCF
+    def write_vcf(variants, vcf_path):
+        with open(vcf_path, "w") as f:
+            f.write("##fileformat=VCFv4.2\n")
+            f.write("##source=DirectComparison\n")
+            f.write("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tSAMPLE\n")
+            for var in variants:
+                f.write(f"{var['CHROM']}\t{var['POS']}\t.\t{var['REF']}\t{var['ALT']}"
+                        f"\t100\tPASS\t.\tGT\t{var['SAMPLE']}\n")
     
-    # Extract BWA if tar file is provided
-    if bwa_tar_path and os.path.exists(bwa_tar_path):
-        extract_bwa(bwa_tar_path, os.path.join(os.path.dirname(output_vcf), 'tools'))
-    
-    # Check if required tools are installed
-    check_dependencies()
-    
-    # Index reference genome if needed
-    index_reference(reference_path)
-    
-    # Align and call variants
-    return align_and_call_variants(input_fasta, reference_path, output_vcf, threads)
+    vcf_path = str(Path(output_report).with_suffix(".vcf"))
+    write_vcf(variants, vcf_path)
+
+    # 4. AI Analysis
+    if hf_token:
+        login(token=hf_token)
+        tokenizer = AutoTokenizer.from_pretrained("TinyLlama/TinyLlama-1.1B-Chat-v1.0")
+        model = AutoModelForCausalLM.from_pretrained("TinyLlama/TinyLlama-1.1B-Chat-v1.0")
+        
+        with open(output_report, "w") as report:
+            for var in variants:
+                prompt = f"""Analyze this genetic variant:
+                - Chromosome: {var['CHROM']}
+                - Position: {var['POS']}
+                - Reference: {var['REF']}
+                - Alternate: {var['ALT']}
+                - Sample: {var['SAMPLE']}
+                Provide potential health implications."""
+                
+                inputs = tokenizer(prompt, return_tensors="pt")
+                outputs = model.generate(**inputs, max_length=512, 
+                                      do_sample=True, temperature=0.8)
+                analysis = tokenizer.decode(outputs[0], skip_special_tokens=True)
+                
+                report.write(f"## Variant {var['CHROM']}:{var['POS']}\n")
+                report.write(f"REF: {var['REF']} → ALT: {var['ALT']}\n")
+                report.write(f"Analysis:\n{analysis}\n\n")
+
+    print(f"Pipeline complete. Results in {vcf_path} and {output_report}")
+
+# Usage
+genomic_analysis_pipeline(
+    input_fasta="sample.fasta",
+    reference_fasta="reference.fa",
+    hf_token="your_token_here",
+    max_variants=50
+)
