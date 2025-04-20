@@ -4,6 +4,19 @@ GenoSense is a robust, AI-driven genomics platform designed to streamline the fl
 
 ---
 
+<a href="https://hack36.in"> 
+  <img src="https://postimage.me/images/2025/04/19/built-at-hack36.png" height=24px> 
+</a>
+
+
+## Demo Video Link:
+  <a href="#"></a>
+
+  
+## Presentation Link:
+  <a href="https://docs.google.com/document/d/1q_LBPiuw8-IA4X1Dm2E96WfQDCPOj8Ngu7Z2Sg2lDno/edit?tab=t.0"> PPT link here </a>
+
+  
 ## 🚀 Project Overview
 
 This platform facilitates a complete pipeline for genomics-based healthcare prediction and disease mapping:
@@ -69,3 +82,23 @@ B -->|DNA Sequencing| C[Generate VCF]
 C --> D[AI Model: Predict Vulnerabilities]
 D --> E[Hospital Receives Report]
 D --> F[Map Common Vulnerabilities on Human Body and also marking common disease of a particular region on map]
+```
+
+## Technology Stack:
+  1) Frontend : Swelt
+  2) Backend : Go
+  3) Machine Learning : Flask , Python 
+  
+
+## Contributors:
+
+Team Name: CodeNhiAta
+
+- [Abhishek Patel](https://github.com/meisabhishekpatel)
+- [Alok Kumar Singh](https://github.com/harmonicfunc)
+- [Shreyansh Sinha](https://github.com/aryan1oo)
+- [Utkarsh Sharma](https://github.com/TechTonicShift)
+
+
+### Made at:
+<a href="https://hack36.in"> <img src="https://postimage.me/images/2025/04/19/built-at-hack36.png" height=24px> </a>
