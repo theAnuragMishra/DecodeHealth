@@ -1,4 +1,4 @@
-![ChatGPT Image Apr 20, 2025, 10_02_55 AM](https://github.com/user-attachments/assets/a06be218-fc3e-413a-925e-3a4819eda579)#  AI-Powered Genomic Vulnerability Detection Pipeline 
+#  AI-Powered Genomic Vulnerability Detection Pipeline 
 
 GenoSense is a robust, AI-driven genomics platform designed to streamline the flow of genetic data between **hospitals**, **labs**, and **AI-powered analysis systems**. It enables early disease detection, prediction of genetic vulnerabilities, and geographic visualization of common disease trends — all while maintaining strict data privacy through **encryption**.
 
