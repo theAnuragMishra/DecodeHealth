@@ -41,8 +41,28 @@ func (q *Queries) DeleteRequest(ctx context.Context, id int32) error {
 	return err
 }
 
+const getRequestInfo = `-- name: GetRequestInfo :one
+SELECT id, name, sequence, age, hospital_id, lab_id, status, report FROM requests WHERE id = $1
+`
+
+func (q *Queries) GetRequestInfo(ctx context.Context, id int32) (Request, error) {
+	row := q.db.QueryRow(ctx, getRequestInfo, id)
+	var i Request
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Sequence,
+		&i.Age,
+		&i.HospitalID,
+		&i.LabID,
+		&i.Status,
+		&i.Report,
+	)
+	return i, err
+}
+
 const getRequestsForHospital = `-- name: GetRequestsForHospital :many
-SELECT id, name, sequence, age, hospital_id, lab_id, status FROM requests WHERE hospital_id = $1
+SELECT id, name, sequence, age, hospital_id, lab_id, status, report FROM requests WHERE hospital_id = $1
 `
 
 func (q *Queries) GetRequestsForHospital(ctx context.Context, hospitalID int32) ([]Request, error) {
@@ -62,6 +82,7 @@ func (q *Queries) GetRequestsForHospital(ctx context.Context, hospitalID int32) 
 			&i.HospitalID,
 			&i.LabID,
 			&i.Status,
+			&i.Report,
 		); err != nil {
 			return nil, err
 		}
@@ -74,7 +95,7 @@ func (q *Queries) GetRequestsForHospital(ctx context.Context, hospitalID int32) 
 }
 
 const getRequestsForLab = `-- name: GetRequestsForLab :many
-SELECT id, name, sequence, age, hospital_id, lab_id, status FROM requests WHERE lab_id = $1
+SELECT id, name, sequence, age, hospital_id, lab_id, status, report FROM requests WHERE lab_id = $1
 `
 
 func (q *Queries) GetRequestsForLab(ctx context.Context, labID int32) ([]Request, error) {
@@ -94,6 +115,7 @@ func (q *Queries) GetRequestsForLab(ctx context.Context, labID int32) ([]Request
 			&i.HospitalID,
 			&i.LabID,
 			&i.Status,
+			&i.Report,
 		); err != nil {
 			return nil, err
 		}
@@ -129,5 +151,19 @@ UPDATE requests SET status = 'fulfilled' WHERE id = $1
 
 func (q *Queries) MarkRequestFulfilled(ctx context.Context, id int32) error {
 	_, err := q.db.Exec(ctx, markRequestFulfilled, id)
+	return err
+}
+
+const updateReport = `-- name: UpdateReport :exec
+UPDATE requests SET report = $1 WHERE id = $2
+`
+
+type UpdateReportParams struct {
+	Report *string
+	ID     int32
+}
+
+func (q *Queries) UpdateReport(ctx context.Context, arg UpdateReportParams) error {
+	_, err := q.db.Exec(ctx, updateReport, arg.Report, arg.ID)
 	return err
 }

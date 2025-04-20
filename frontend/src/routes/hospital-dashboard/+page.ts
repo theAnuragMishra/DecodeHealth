@@ -3,7 +3,7 @@ import { error } from "@sveltejs/kit";
 
 export async function load({ parent }) {
   const { user } = await parent();
-  const response = await fetch(`${getBaseURL()}/requests-lab/${user.ID}`, {
+  const response = await fetch(`${getBaseURL()}/requests-hospital/${user.ID}`, {
     credentials: "include",
   });
   if (!response.ok) {

@@ -14,7 +14,7 @@ type Org struct {
 	ID           int32
 	Name         string
 	CreatedAt    pgtype.Timestamptz
-	Kind         string
+	Role         string
 	PasswordHash string
 }
 
@@ -26,6 +26,7 @@ type Request struct {
 	HospitalID int32
 	LabID      int32
 	Status     string
+	Report     *string
 }
 
 type Session struct {

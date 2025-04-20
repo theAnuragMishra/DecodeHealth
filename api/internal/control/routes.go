@@ -17,7 +17,7 @@ func (c *Controller) SetUpRouter() {
 
 	c.router.Group(func(r chi.Router) {
 		r.Use(c.AuthMiddleware)
-		r.Post("/new-request", c.CreateRequest)
+		r.Post("/create-request", c.CreateRequest)
 		r.Patch("/ff-req", c.MarkRequestFulfilled)
 		r.Patch("/deny-req", c.MarkRequestDenied)
 		r.Patch("/acc-req", c.MarkRequestAccepted)
@@ -26,6 +26,8 @@ func (c *Controller) SetUpRouter() {
 		r.Get("/lab-list", c.GetLabs)
 		r.Get("/me", c.HandleMe)
 		r.Post("/logout", c.HandleLogout)
+		r.Get("/request/{id}", c.GetRequestInfo)
+		r.Post("/update-report/{id}", c.UpdateReport)
 	})
 	c.router.Post("/new-org", c.SignUpHandler)
 	c.router.Post("/login", c.LoginHandler)

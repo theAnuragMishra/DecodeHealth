@@ -2,9 +2,13 @@ package control
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
+
+	"github.com/go-chi/chi/v5"
 
 	"github.com/theAnuragMishra/decode-health/api/internal/database"
 )
@@ -20,7 +24,7 @@ func (c *Controller) SignUpHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		RespondWithError(w, http.StatusInternalServerError, "server error")
 	}
-	err = c.queries.CreateOrg(r.Context(), database.CreateOrgParams{Name: payload.Name, Kind: payload.Kind, PasswordHash: passwordHash})
+	err = c.queries.CreateOrg(r.Context(), database.CreateOrgParams{Name: payload.Name, Role: payload.Kind, PasswordHash: passwordHash})
 	if err != nil {
 		RespondWithError(w, http.StatusInternalServerError, "error creating org")
 		return
@@ -30,6 +34,7 @@ func (c *Controller) SignUpHandler(w http.ResponseWriter, r *http.Request) {
 
 func (c *Controller) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	var payload loginData
+	fmt.Println("inside login")
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
 		RespondWithError(w, http.StatusBadRequest, "bad request")
@@ -91,7 +96,7 @@ func (c *Controller) HandleMe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	RespondWithJSON(w, http.StatusOK, map[string]interface{}{"username": org.Name, "orgID": org.ID})
+	RespondWithJSON(w, http.StatusOK, org)
 }
 
 func (c *Controller) CreateRequest(w http.ResponseWriter, r *http.Request) {
@@ -107,7 +112,6 @@ func (c *Controller) CreateRequest(w http.ResponseWriter, r *http.Request) {
 		LabID:      req.LabID,
 		Age:        req.Age,
 	})
-
 	if err != nil {
 		RespondWithError(w, http.StatusInternalServerError, "server error")
 		return
@@ -154,7 +158,6 @@ func (c *Controller) MarkRequestDenied(w http.ResponseWriter, r *http.Request) {
 		RespondWithError(w, http.StatusBadRequest, "bad request")
 		return
 	}
-
 }
 
 func (c *Controller) DeleteRequest(w http.ResponseWriter, r *http.Request) {
@@ -174,14 +177,13 @@ func (c *Controller) DeleteRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Controller) GetRequestsForHospitals(w http.ResponseWriter, r *http.Request) {
-	var id reqID
-	err := json.NewDecoder(r.Body).Decode(&id)
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		RespondWithError(w, http.StatusBadRequest, "bad request")
 		return
 	}
-	requests, err := c.queries.GetRequestsForHospital(r.Context(), id.ID)
 
+	requests, err := c.queries.GetRequestsForHospital(r.Context(), int32(id))
 	if err != nil {
 		RespondWithError(w, http.StatusInternalServerError, "server error")
 		return
@@ -190,21 +192,22 @@ func (c *Controller) GetRequestsForHospitals(w http.ResponseWriter, r *http.Requ
 }
 
 func (c *Controller) GetRequestsForLab(w http.ResponseWriter, r *http.Request) {
-	var id reqID
-	err := json.NewDecoder(r.Body).Decode(&id)
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		RespondWithError(w, http.StatusBadRequest, "bad request")
 		return
-
 	}
-	requests, err := c.queries.GetRequestsForLab(r.Context(), id.ID)
+
+	fmt.Println(id)
+
+	requests, err := c.queries.GetRequestsForLab(r.Context(), int32(id))
 	if err != nil {
+		log.Println(err)
 		RespondWithError(w, http.StatusInternalServerError, "server error")
 		return
 
 	}
 	RespondWithJSON(w, http.StatusOK, requests)
-
 }
 
 func (c *Controller) GetLabs(w http.ResponseWriter, r *http.Request) {
@@ -214,5 +217,42 @@ func (c *Controller) GetLabs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	RespondWithJSON(w, http.StatusOK, labs)
+}
 
+func (c *Controller) GetRequestInfo(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		fmt.Println(err)
+		RespondWithError(w, http.StatusBadRequest, "bad request")
+		return
+	}
+
+	requestInfo, err := c.queries.GetRequestInfo(r.Context(), int32(id))
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, "server error")
+		return
+	}
+	RespondWithJSON(w, http.StatusOK, requestInfo)
+}
+
+func (c *Controller) UpdateReport(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "bad request")
+		return
+	}
+	var report report
+
+	err = json.NewDecoder(r.Body).Decode(&report)
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "error")
+		return
+	}
+
+	err = c.queries.UpdateReport(r.Context(), database.UpdateReportParams{ID: int32(id), Report: &report.Report})
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+	RespondWithJSON(w, 200, "ok")
 }

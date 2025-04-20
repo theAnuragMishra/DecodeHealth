@@ -22,3 +22,7 @@ type request struct {
 type reqID struct {
 	ID int32 `json:"id"`
 }
+
+type report struct {
+	Report string `json:"report"`
+}

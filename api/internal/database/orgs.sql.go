@@ -10,22 +10,22 @@ import (
 )
 
 const createOrg = `-- name: CreateOrg :exec
-INSERT INTO orgs (name, kind, password_hash) VALUES ($1, $2, $3)
+INSERT INTO orgs (name, role, password_hash) VALUES ($1, $2, $3)
 `
 
 type CreateOrgParams struct {
 	Name         string
-	Kind         string
+	Role         string
 	PasswordHash string
 }
 
 func (q *Queries) CreateOrg(ctx context.Context, arg CreateOrgParams) error {
-	_, err := q.db.Exec(ctx, createOrg, arg.Name, arg.Kind, arg.PasswordHash)
+	_, err := q.db.Exec(ctx, createOrg, arg.Name, arg.Role, arg.PasswordHash)
 	return err
 }
 
 const getLabs = `-- name: GetLabs :many
-SELECT id, name, created_at, kind, password_hash FROM orgs WHERE role = 'lab'
+SELECT id, name, created_at, role, password_hash FROM orgs WHERE role = 'lab'
 `
 
 func (q *Queries) GetLabs(ctx context.Context) ([]Org, error) {
@@ -41,7 +41,7 @@ func (q *Queries) GetLabs(ctx context.Context) ([]Org, error) {
 			&i.ID,
 			&i.Name,
 			&i.CreatedAt,
-			&i.Kind,
+			&i.Role,
 			&i.PasswordHash,
 		); err != nil {
 			return nil, err
@@ -55,7 +55,7 @@ func (q *Queries) GetLabs(ctx context.Context) ([]Org, error) {
 }
 
 const getOrg = `-- name: GetOrg :one
-SELECT id, name, created_at, kind, password_hash FROM orgs WHERE id = $1
+SELECT id, name, created_at, role, password_hash FROM orgs WHERE id = $1
 `
 
 func (q *Queries) GetOrg(ctx context.Context, id int32) (Org, error) {
@@ -65,7 +65,7 @@ func (q *Queries) GetOrg(ctx context.Context, id int32) (Org, error) {
 		&i.ID,
 		&i.Name,
 		&i.CreatedAt,
-		&i.Kind,
+		&i.Role,
 		&i.PasswordHash,
 	)
 	return i, err

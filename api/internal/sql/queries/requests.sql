@@ -18,3 +18,9 @@ SELECT * FROM requests WHERE hospital_id = $1;
 
 -- name: GetRequestsForLab :many
 SELECT * FROM requests WHERE lab_id = $1;
+
+-- name: GetRequestInfo :one
+SELECT * FROM requests WHERE id = $1;
+
+-- name: UpdateReport :exec
+UPDATE requests SET report = $1 WHERE id = $2;

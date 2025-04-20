@@ -3,7 +3,8 @@
   import { getBaseURL } from "$lib";
 
   let { data } = $props();
-  if (data.user.role != "hospital") goto("/");
+  console.log(data.labs);
+  if (data.user.Role != "hospital") goto("/");
   let name = $state("");
   let age = $state("");
   let sequence = $state("");
@@ -18,8 +19,8 @@
         name,
         age,
         sequence,
-        labID,
-        hospitalID: data.user.id,
+        labID: Number(labID),
+        hospitalID: Number(data.user.ID),
       }),
       credentials: "include",
     });
@@ -95,7 +96,7 @@
             >
               <option value="" disabled selected>Select a lab</option>
               {#each data.labs as l, i (i)}
-                <option value={l}>{l}</option>
+                <option value={l.ID}>{l.Name}</option>
               {/each}
             </select>
           </label>
@@ -111,4 +112,3 @@
     </div>
   </div>
 </div>
-

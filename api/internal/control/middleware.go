@@ -2,6 +2,7 @@ package control
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 )
@@ -13,6 +14,7 @@ const MiddlewareSentSession contextKey = "session"
 func (c *Controller) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		sessionTokenCookie, err := r.Cookie("session_token")
+		fmt.Println("inside wathever")
 		if err != nil {
 			RespondWithError(w, http.StatusUnauthorized, err.Error())
 			return

@@ -13,7 +13,7 @@
     try {
       const response = await fetch(`${getBaseURL()}/login`, {
         method: "POST",
-        body: JSON.stringify({ name, password }),
+        body: JSON.stringify({ id, password }),
         credentials: "include",
         headers: { "Content-Type": "application/json" },
       });
@@ -78,4 +78,3 @@
     </div>
   </div>
 </div>
-

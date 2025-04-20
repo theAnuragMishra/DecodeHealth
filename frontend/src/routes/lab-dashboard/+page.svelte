@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { getBaseURL } from "$lib";
+
   let activeTab = $state("new");
   let { data } = $props();
 </script>
@@ -29,12 +31,22 @@
     </h1>
 
     <div class="space-y-4">
-      {#each data.requests.filter((r: any) => (activeTab === "new" && r.status === "pending") || (activeTab === "accepted" && r.status === "accepted") || (activeTab === "rejected" && r.status === "rejected") || (activeTab === "live" && r.status === "accepted")) as req, index (index)}
+      {#each data.requests.filter((r: any) => (activeTab === "new" && r.Status === "pending") || (activeTab === "accepted" && r.Status === "accepted") || (activeTab === "rejected" && r.Status === "rejected") || (activeTab === "live" && r.Status === "accepted")) as req, index (index)}
         <div class="bg-white shadow-md rounded-lg p-4 border border-gray-200">
-          <a href={`/request/${req.id}`}><strong>Name:</strong> {req.name}</a>
-          <span><strong>Age:</strong> {req.age}</span>
-          <span><strong>Sequence:</strong> {req.sequence}</span>
-          <span><strong>Lab:</strong> {req.lab}</span>
+          <a href={`/request/${req.ID}`}><strong>Name:</strong> {req.Name}</a>
+          <span><strong>Age:</strong> {req.Age}</span>
+          <span><strong>Sequence:</strong> {req.Sequence}</span>
+          <span><strong>Lab:</strong> {req.Lab}</span>
+          <button>Accept</button>
+          <button
+            onclick={async () => {
+              await fetch(`${getBaseURL()}/ff-req`, {
+                body: JSON.stringify({ id: req.Id }),
+                method: "PATCH",
+                credentials: "include",
+              });
+            }}>Deny</button
+          >
         </div>
       {:else}
         <p class="text-gray-500">No requests in this tab.</p>
@@ -42,4 +54,3 @@
     </div>
   </div>
 </div>
-
